@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -126,3 +127,36 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/data/login/'
 LOGIN_REDIRECT_URL = '/data/dashboard/'
 LOGOUT_REDIRECT_URL = '/data/login/'
+
+import os
+
+# Try to import dj_database_url if available; otherwise fall back to default sqlite config
+try:
+    import dj_database_url
+except Exception:
+    dj_database_url = None
+
+# For Render
+DEBUG = False
+ALLOWED_HOSTS = ['your-app-name.onrender.com']
+
+# Database (Render provides PostgreSQL if dj_database_url is available)
+if dj_database_url:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default='sqlite:///db.sqlite3',
+            conn_max_age=600
+        )
+    }
+else:
+    # Fallback to the local sqlite database when dj-database-url is not installed
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+# Static files
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
